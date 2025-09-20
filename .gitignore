@@ -1,0 +1,72 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+staticfiles/
+*.sqlite3
+
+# Virtualenv
+venv/
+ENV/
+env/
+.venv/
+.env/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# dotenv
+*.env
+
+# Migrations
+*/migrations/*.pyc
+*/migrations/*.pyo
+*/migrations/__pycache__/
+*/migrations/*.sqlite3
+*/migrations/*.db
+*/migrations/*.log
+*/migrations/*.pot
+*/migrations/*.py
+*/migrations/*.json
+*/migrations/*.csv
+*/migrations/*.tsv
+*/migrations/*.xls
+*/migrations/*.xlsx
+*/migrations/*.db
+*/migrations/*.sqlite3
+*/migrations/*.log
+*/migrations/*.pot
+*/migrations/*.py
+*/migrations/*.json
+*/migrations/*.csv
+*/migrations/*.tsv
+*/migrations/*.xls
+*/migrations/*.xlsx
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.cache/
+tox/
+.pytest_cache/
+storefront/__pycache__/settings.cpython-311.pyc
+storefront/__pycache__/settings.cpython-311.pyc
+storefront/__pycache__/urls.cpython-311.pyc
+storefront/__pycache__/settings.cpython-311.pyc
+storefront/__pycache__/urls.cpython-311.pyc
