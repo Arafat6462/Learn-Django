@@ -3,6 +3,13 @@ from django.db import models
 class Collection(models.Model):
     title = models.CharField(max_length=255)
 
+class Promotion(models.Model):
+    description = models.CharField(max_length=255)
+    discount = models.FloatField()
+    # Product_set will be created automatically in Product model
+    # django automatically adds reverse relationship in the related model
+    # products = reverse relationship from Product model will be created automatically as 'promotions_set' unless specified otherwise in Product model
+    products = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='+')
 # Create your models here.
 class Product(models.Model):
     # in django, primary key is automatically added as id field if not specified otherwise
@@ -13,7 +20,7 @@ class Product(models.Model):
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
-
+    Promotions = models.ManyToManyField(Promotion)
 
 class Customer(models.Model):
     MEMBERSHIP_BRONZE = 'B'
