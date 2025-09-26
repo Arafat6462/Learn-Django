@@ -15,8 +15,9 @@ class Product(models.Model):
     # in django, primary key is automatically added as id field if not specified otherwise
     # sku = models.CharField(max_length=10, primary_key=True)
     title = models.CharField(max_length=255)
+    slug = models.SlugField() # this will create a slug field which is a short label for something, containing only letters, numbers, underscores or hyphens so that it can be used in URLs
     description = models.TextField()
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
