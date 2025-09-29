@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-from django.db.models import Q
+from django.db.models import Q, F
 from store.models import Product, Customer, Collection, Order
 
 
@@ -85,7 +85,23 @@ def say_hello(request):
     # inventory < 10 OR unit_price < 20
     filtered_products12 = Product.objects.filter(Q(inventory__lt=10) | Q(unit_price__lt=20))  # OR condition using Q objects
     filtered_products13 = Product.objects.filter(Q(inventory__lt=10) & Q(unit_price__lt=20))  # AND condition using Q objects
-    filtered_products14 = Product.objects.filter(Q(inventory_lt=10) & ~Q(unit_price__lt=20))  # inventory < 10 AND NOT (unit_price < 20) using Q objects
+    filtered_products14 = Product.objects.filter(Q(inventory__lt=10) & ~Q(unit_price__lt=20))  # inventory < 10 AND NOT (unit_price < 20) using Q objects
+
+    # Referencing related fields using F objects
+    # Products: inventory = unit_price
+    # filtered_products15 = Product.objects.filter(inventory=unit_price) # This will raise an error because unit_price is not defined in this scope. To reference model fields, we should use F objects from django.db.models.
+    # filtered_products16 = Product.objects.filter(inventory=F('unit_price'))  # Using F objects to reference model fields
+
+
+# F Object
+# Purpose: Reference model field values directly in queries and updates.
+# Use Case: When you want to compare a field to another field, or perform arithmetic using field values.
+# Example: Find products where inventory equals unit_price:
+
+# Q Object
+# Purpose: Build complex queries with AND, OR, and NOT logic.
+# Use Case: When you need to combine multiple conditions, especially with OR or NOT.
+# Example: Find products where inventory < 10 OR unit_price < 20:
 
 
 
@@ -95,4 +111,4 @@ def say_hello(request):
     print(filtered_products)
 
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(filtered_products12)})
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(filtered_products14)})
