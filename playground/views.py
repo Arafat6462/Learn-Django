@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-from store.models import Product
+from store.models import Product, Customer, Collection, Order
 
 
 def say_hello(request):
@@ -59,4 +59,28 @@ def say_hello(request):
     exist_bool = Product.objects.filter(id=1).exists()  # Returns True if a product with id=1 exists, otherwise False
     product_2 = Product.objects.filter(id=0).first()  # Returns None if no match is found, avoiding exception
 
-    return render(request, 'hello.html', {'name': 'Arafat'})
+
+    # Filtering objects with LooksUp. field lookups examples: exact, iexact, contains, icontains, in, gt, gte, lt, lte, startswith, istartswith, endswith, iendswith, range, date, year, month, day, week_day, isnull, search, regex, iregex are available to use.
+    # Field lookups are used to create more complex queries by specifying conditions on model fields.
+    # filtered_products = Product.objects.filter(unit_price__gt =20)
+    filtered_products = Product.objects.filter(unit_price__range =(20,30))
+    # we can use multiple filters like startswith and endswith, etc.
+    filtered_products2 = Product.objects.filter(title__contains='coffee')  # Case-sensitive contains
+    filtered_products3 = Product.objects.filter(title__icontains='coffee')  # Case-insensitive contains
+    filtered_products4 = Product.objects.filter(title__istartswith='coffee')  # Case-insensitive startswith
+    filtered_products5 = Product.objects.filter(last_update__year='2021')  # Products updated in the year 2023
+    filtered_products6 = Product.objects.filter(description__isnull=True)  # Products with no description
+
+
+    filtered_products7 = Customer.objects.filter(email__endswith='.com')  # Customers with email ending in .com
+    filtered_products8 = Product.objects.filter(inventory__lt=10)  # Products with inventory less than 10
+    filtered_products9 = Order.objects.filter(pk=1) # Orders with primary key 1
+
+
+
+    
+
+    print(filtered_products)
+
+
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(filtered_products9)})
