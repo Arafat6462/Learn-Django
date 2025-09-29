@@ -63,34 +63,34 @@ def say_hello(request):
 
     # Filtering objects with LooksUp. field lookups examples: exact, iexact, contains, icontains, in, gt, gte, lt, lte, startswith, istartswith, endswith, iendswith, range, date, year, month, day, week_day, isnull, search, regex, iregex are available to use.
     # Field lookups are used to create more complex queries by specifying conditions on model fields.
-    # filtered_products = Product.objects.filter(unit_price__gt =20)
-    filtered_products = Product.objects.filter(unit_price__range =(20,30))
+    # queryset_filter = Product.objects.filter(unit_price__gt =20)
+    queryset_filter = Product.objects.filter(unit_price__range =(20,30))
     # we can use multiple filters like startswith and endswith, etc.
-    filtered_products2 = Product.objects.filter(title__contains='coffee')  # Case-sensitive contains
-    filtered_products3 = Product.objects.filter(title__icontains='coffee')  # Case-insensitive contains
-    filtered_products4 = Product.objects.filter(title__istartswith='coffee')  # Case-insensitive startswith
-    filtered_products5 = Product.objects.filter(last_update__year='2021')  # Products updated in the year 2023
-    filtered_products6 = Product.objects.filter(description__isnull=True)  # Products with no description
+    queryset_filter2 = Product.objects.filter(title__contains='coffee')  # Case-sensitive contains
+    queryset_filter3 = Product.objects.filter(title__icontains='coffee')  # Case-insensitive contains
+    queryset_filter4 = Product.objects.filter(title__istartswith='coffee')  # Case-insensitive startswith
+    queryset_filter5 = Product.objects.filter(last_update__year='2021')  # Products updated in the year 2023
+    queryset_filter6 = Product.objects.filter(description__isnull=True)  # Products with no description
 
 
-    filtered_products7 = Customer.objects.filter(email__endswith='.com')  # Customers with email ending in .com
-    filtered_products8 = Product.objects.filter(inventory__lt=10)  # Products with inventory less than 10
-    filtered_products9 = Order.objects.filter(pk=1) # Orders with primary key 1
+    queryset_filter7 = Customer.objects.filter(email__endswith='.com')  # Customers with email ending in .com
+    queryset_filter8 = Product.objects.filter(inventory__lt=10)  # Products with inventory less than 10
+    queryset_filter9 = Order.objects.filter(pk=1) # Orders with primary key 1
 
     # Complex lookups using Q objects for OR conditions
     # inventory < 10 AND unit_price < 20
-    filtered_products10 = Product.objects.filter(inventory__lt=10, unit_price__lt=20)  # AND condition
-    filtered_products11 = Product.objects.filter(inventory__lt=10).filter(unit_price__lt=20)  # Chained filters (also AND condition). filter returns a query set. when call by list(name) then queryset evaluated.
+    queryset_filter10 = Product.objects.filter(inventory__lt=10, unit_price__lt=20)  # AND condition
+    queryset_filter11 = Product.objects.filter(inventory__lt=10).filter(unit_price__lt=20)  # Chained filters (also AND condition). filter returns a query set. when call by list(name) then queryset evaluated.
     
     # inventory < 10 OR unit_price < 20
-    filtered_products12 = Product.objects.filter(Q(inventory__lt=10) | Q(unit_price__lt=20))  # OR condition using Q objects
-    filtered_products13 = Product.objects.filter(Q(inventory__lt=10) & Q(unit_price__lt=20))  # AND condition using Q objects
-    filtered_products14 = Product.objects.filter(Q(inventory__lt=10) & ~Q(unit_price__lt=20))  # inventory < 10 AND NOT (unit_price < 20) using Q objects
+    queryset_filter12 = Product.objects.filter(Q(inventory__lt=10) | Q(unit_price__lt=20))  # OR condition using Q objects
+    queryset_filter13 = Product.objects.filter(Q(inventory__lt=10) & Q(unit_price__lt=20))  # AND condition using Q objects
+    queryset_filter14 = Product.objects.filter(Q(inventory__lt=10) & ~Q(unit_price__lt=20))  # inventory < 10 AND NOT (unit_price < 20) using Q objects
 
     # Referencing related fields using F objects
     # Products: inventory = unit_price
-    # filtered_products15 = Product.objects.filter(inventory=unit_price) # This will raise an error because unit_price is not defined in this scope. To reference model fields, we should use F objects from django.db.models.
-    # filtered_products16 = Product.objects.filter(inventory=F('unit_price'))  # Using F objects to reference model fields
+    # queryset_filter15 = Product.objects.filter(inventory=unit_price) # This will raise an error because unit_price is not defined in this scope. To reference model fields, we should use F objects from django.db.models.
+    # queryset_filter16 = Product.objects.filter(inventory=F('unit_price'))  # Using F objects to reference model fields
 
 
 # F Object
@@ -103,12 +103,23 @@ def say_hello(request):
 # Use Case: When you need to combine multiple conditions, especially with OR or NOT.
 # Example: Find products where inventory < 10 OR unit_price < 20:
 
+    # Sorting
+    queryset_filter17 = Product.objects.order_by('title') # Ascending order by title
+    queryset_filter18 = Product.objects.order_by('title', '-unit_price') # Ascending by title, then descending by unit_price
+    queryset_filter19 = Product.objects.order_by('title', '-unit_price').reverse() # Reverse the order of the previous sorting
+    
+    queryset_filter20 = Product.objects.order_by('unit_price')[0] 
+    queryset_filter21 = Product.objects.earliest('unit_price') # returns the object with the lowest unit_price
 
+
+    # Limiting results
+    queryset_filter22 = Product.objects.all()[:5]  # First 5 products
+    queryset_filter23 = Product.objects.all()[5:10]
 
 
     
 
-    print(filtered_products)
+    print(queryset_filter)
 
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(filtered_products14)})
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(queryset_filter23)})
