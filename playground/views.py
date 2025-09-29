@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
+from django.db.models import Q
 from store.models import Product, Customer, Collection, Order
 
 
@@ -76,6 +77,17 @@ def say_hello(request):
     filtered_products8 = Product.objects.filter(inventory__lt=10)  # Products with inventory less than 10
     filtered_products9 = Order.objects.filter(pk=1) # Orders with primary key 1
 
+    # Complex lookups using Q objects for OR conditions
+    # inventory < 10 AND unit_price < 20
+    filtered_products10 = Product.objects.filter(inventory__lt=10, unit_price__lt=20)  # AND condition
+    filtered_products11 = Product.objects.filter(inventory__lt=10).filter(unit_price__lt=20)  # Chained filters (also AND condition). filter returns a query set. when call by list(name) then queryset evaluated.
+    
+    # inventory < 10 OR unit_price < 20
+    filtered_products12 = Product.objects.filter(Q(inventory__lt=10) | Q(unit_price__lt=20))  # OR condition using Q objects
+    filtered_products13 = Product.objects.filter(Q(inventory__lt=10) & Q(unit_price__lt=20))  # AND condition using Q objects
+    filtered_products14 = Product.objects.filter(Q(inventory_lt=10) & ~Q(unit_price__lt=20))  # inventory < 10 AND NOT (unit_price < 20) using Q objects
+
+
 
 
     
@@ -83,4 +95,4 @@ def say_hello(request):
     print(filtered_products)
 
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(filtered_products9)})
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(filtered_products12)})
