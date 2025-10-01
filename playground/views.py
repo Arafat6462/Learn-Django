@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.db.models import Q, F
-from store.models import Product, Customer, Collection, Order
+from store.models import Product, Customer, Collection, Order, OrderItem
 
 
 def say_hello(request):
@@ -117,9 +117,22 @@ def say_hello(request):
     queryset_filter23 = Product.objects.all()[5:10]
 
 
+    # Selecting fields for query (to optimize performance)
+    # by default, Django retrieves all fields of a model when you query it.
+    # However, if you only need specific fields, you can use .only() or .values() to limit the fields fetched from the database.
+
+    queryset_filter24 = Product.objects.values('id', 'title')  # Returns dictionaries with only 'id' and 'title' fields
+    queryset_filter25 = Product.objects.values('id', 'title', 'collection__title')  # Including related field 'collection.title'. it will return type of dictionary
+    queryset_filter26 = Product.objects.values_list('id', 'title', 'collection__title')  # Returns tuples with 'id', 'title', and 'collection_id' fields
+
+    # Select Product that have been ordered and sort by title
+    queryset = OrderItem.objects.values('product_id').distinct() # you can call product_id or product__id both are same. but product_id is faster because it does not involve a join. and distinct() is used to eliminate duplicate product ids.
+    queryset2 = Product.objects.filter(id__in=queryset).order_by('title') # Select Products that have been ordered and sort by title. here id__in is used to filter products whose id is in the list of product ids from the OrderItem queryset.
+
+
     
 
-    print(queryset_filter)
+    print(queryset)
 
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(queryset_filter23)})
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(queryset2)})
