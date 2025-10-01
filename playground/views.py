@@ -128,11 +128,20 @@ def say_hello(request):
     # Select Product that have been ordered and sort by title
     queryset = OrderItem.objects.values('product_id').distinct() # you can call product_id or product__id both are same. but product_id is faster because it does not involve a join. and distinct() is used to eliminate duplicate product ids.
     queryset2 = Product.objects.filter(id__in=queryset).order_by('title') # Select Products that have been ordered and sort by title. here id__in is used to filter products whose id is in the list of product ids from the OrderItem queryset.
+    
+    # values() vs only()
+    # .values() returns dictionaries with only the specified fields, while .only() returns model
+    queryset3 = Product.objects.only('id', 'title')  # Fetches only 'id' and 'title' fields, other fields are deferred until accessed
+    ## Warning: Using .only() can lead to additional database queries if you access deferred fields later, so use it judiciously. only use it when you are sure you won't need the other fields.
+    ## IF you dont know what you are doing, you end up with N+1 query problem. so be careful when using only().
 
-
+    queryset4 = Product.objects.defer('description')  # Fetches all fields except 'description', which is deferred until accessed
+    ## Warning: Similar to .only(), using .defer() can lead to additional queries if deferred fields are accessed later. so use it judiciously.
+    ## if you use for loop and inside the loop you access the deferred field, it will make a query for each iteration. so be careful when using defer().
+    
     
 
     print(queryset)
 
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(queryset2)})
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(queryset4)})
