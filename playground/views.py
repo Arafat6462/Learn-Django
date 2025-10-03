@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.db.models import Q, F
+from django.db.models import Count, Min, Max, Avg, Sum
 from store.models import Product, Customer, Collection, Order, OrderItem
 
 
@@ -153,4 +154,11 @@ def say_hello(request):
     # Get the last 5 orders with their customer and items (include product)
     queryset8 = Order.objects.select_related('customer').prefetch_related('orderitem_set__product').order_by('-placed_at')[:5] # here orderitem_set is the reverse relationship from OrderItem to Order. django automatically creates a reverse relationship for ForeignKey fields. and you can access it using the model name in lowercase followed by _set. you can change the name of the reverse relationship by adding related_name parameter in ForeignKey field. here we are using double underscore to access the product field of the OrderItem model. this will prefetch all the products related to the order items in a separate query and join them in python. this will avoid N+1 query problem when you access orderitem_set and product fields in a loop.
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(queryset8)})
+    # Aggregating objects.
+    # from django.db.models import Count, Min, Max, Avg, Sum
+    result = Product.objects.aggregate(Count('id')) # Total number of products. it will return a dictionary with the key as id__count and value as the count of products not the queryset.
+    result2 = Product.objects.aggregate(count=Count('id')) # Total number of products with custom key name. it will return a dictionary with the key as count and value as the count of products.
+    result3 = Product.objects.aggregate(count=Count('id'), min_price=Min('unit_price')) # Total number of products and minimum unit price. it will return a dictionary with the keys as count and min_price and values as the count of products and minimum unit price respectively.
+
+
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result3)})
