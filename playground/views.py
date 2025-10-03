@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.db.models import Q, F
-from django.db.models import Count, Min, Max, Avg, Sum
+from django.db.models import Count, Min, Max, Avg, Sum, Value
 from store.models import Product, Customer, Collection, Order, OrderItem
 
 
@@ -160,5 +160,12 @@ def say_hello(request):
     result2 = Product.objects.aggregate(count=Count('id')) # Total number of products with custom key name. it will return a dictionary with the key as count and value as the count of products.
     result3 = Product.objects.aggregate(count=Count('id'), min_price=Min('unit_price')) # Total number of products and minimum unit price. it will return a dictionary with the keys as count and min_price and values as the count of products and minimum unit price respectively.
 
+    # Annotating objects. (similar to aggregate but it returns a queryset with the aggregated values for each object in the queryset)
+    # we need to pass an expression to annotate() method. expression can be an aggregate function or a F object or a combination of both.
+    # example of all expressions: Count, Sum, Avg, Max, Min, F, Value, Case, When, Q, etc.
+    result4 = Customer.objects.annotate(is_new=Value(True)) # Annotate each customer with a new field 'is_new' set to True. here Value(True) is used to create a constant value for the new field.
+    result5 = Customer.objects.annotate(new_id=F('id')+1) # Annotate each customer with a new field 'new_id' which is id + 1. here F('id') is used to reference the id field of the Customer model.
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result3)})
+
+
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result5)})
