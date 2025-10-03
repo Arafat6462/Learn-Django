@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.db.models import Q, F
-from django.db.models import Count, Min, Max, Avg, Sum, Value
+from django.db.models import Count, Min, Max, Avg, Sum, Value, Func
+from django.db.models.functions import Concat
 from store.models import Product, Customer, Collection, Order, OrderItem
 
 
@@ -166,6 +167,10 @@ def say_hello(request):
     result4 = Customer.objects.annotate(is_new=Value(True)) # Annotate each customer with a new field 'is_new' set to True. here Value(True) is used to create a constant value for the new field.
     result5 = Customer.objects.annotate(new_id=F('id')+1) # Annotate each customer with a new field 'new_id' which is id + 1. here F('id') is used to reference the id field of the Customer model.
 
+    # Calling Database Functions
+    result6 = Customer.objects.annotate(full_name=Func(F('first_name'),Value(' '), F('last_name'), function='CONCAT')) # Annotate each customer with a new field 'full_name' which is the concatenation of first_name and last_name. here Func is used to call a database function. CONCAT is a SQL function that concatenates two or more strings. this will work only if your database supports CONCAT function. if you are using sqlite, you can use || operator instead of CONCAT function.
+    # alternatively, you can use Concat function from django.db.models.functions
+    result7 = Customer.objects.annotate(full_name=Concat('first_name', Value(' '), 'last_name')) # This is a more portable way to concatenate strings across different databases. it will work with all databases supported by django.
 
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result5)})
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result7)})
