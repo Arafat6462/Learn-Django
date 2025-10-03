@@ -10,7 +10,7 @@
     <ul>
       {% for product in products %}
       <li>
-        {{ product.title }} - ${{ product.unit_price }} - {{ product.email}}
+        {{ product.title }} - ${{ product.unit_price }} - {{ product.collection.title}}
       </li>
     </ul>
     {% endfor %}

@@ -58,6 +58,7 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
 
 class OrderItem(models.Model):
+    # in Order model, django will automatically create a reverse relationship as orderitem_set unless specified otherwise. this can be changed by adding related_name parameter in ForeignKey
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
     product = models.ForeignKey(Product, on_delete=models.PROTECT) # django will automatically create a product_id field in the database.
     quantity = models.PositiveSmallIntegerField()

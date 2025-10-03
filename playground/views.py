@@ -139,9 +139,18 @@ def say_hello(request):
     ## Warning: Similar to .only(), using .defer() can lead to additional queries if deferred fields are accessed later. so use it judiciously.
     ## if you use for loop and inside the loop you access the deferred field, it will make a query for each iteration. so be careful when using defer().
     
-    
 
-    print(queryset)
+    ## Selecting related objects to avoid N+1 query problem
+    queryset5 = Product.objects.all()  # This will cause N+1 query problem if you access related fields in a loop. here this will call only all products query. but when you access related fields like collection.title in a loop, it will make a query for each product to fetch the related collection.
+    queryset6 = Product.objects.select_related('collection').all()  # This will fetch related collection in the same query using a SQL join. use select_related for ForeignKey and OneToOne relationships only. it is faster because it uses a SQL join and preloads the related objects in a single query.
+    # use select_related when you know you will need the related object and you want to avoid additional queries.
+    # and select_related (1) is used for single-valued relationships (ForeignKey, OneToOneField). 
+    # if you have multi-valued relationships (ManyToManyField, reverse ForeignKey), use prefetch_related instead.
 
+    queryset7 = Product.objects.prefetch_related('promotions').all()  # This will fetch related promotions in a separate query and join them in Python. use prefetch_related for ManyToMany and reverse ForeignKey relationships. it is useful when you have a lot of related objects and you want to avoid loading them all at once.
+    # use prefetch_related when you have multi-valued relationships and you want to avoid loading
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(queryset4)})
+    # Get the last 5 orders with their customer and items (include product)
+    queryset8 = Order.objects.select_related('customer').prefetch_related('orderitem_set__product').order_by('-placed_at')[:5] # here orderitem_set is the reverse relationship from OrderItem to Order. django automatically creates a reverse relationship for ForeignKey fields. and you can access it using the model name in lowercase followed by _set. you can change the name of the reverse relationship by adding related_name parameter in ForeignKey field. here we are using double underscore to access the product field of the OrderItem model. this will prefetch all the products related to the order items in a separate query and join them in python. this will avoid N+1 query problem when you access orderitem_set and product fields in a loop.
+
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(queryset8)})
