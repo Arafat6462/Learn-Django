@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, F
 from django.db.models import Count, Min, Max, Avg, Sum, Value, Func, ExpressionWrapper, DecimalField
 from django.db.models.functions import Concat
-from store.models import Product, Customer, Collection, Order, OrderItem
+from store.models import Product, Customer, Collection, Order, OrderItem, TaggedItem
+from tags.models import TaggedItem
 
 
 def say_hello(request):
@@ -184,7 +186,16 @@ def say_hello(request):
     result9 = Product.objects.annotate(discounted_price=F('unit_price') * 0.8) # this will raise an error because you cannot multiply a F object directly with a float. you need to use ExpressionWrapper to wrap the expression and specify the output field type.
     result9 = Product.objects.annotate(discounted_price=ExpressionWrapper(F('unit_price') * 0.8, output_field=DecimalField())) # Annotate each product with a new field 'discounted_price' which is 80% of the unit_price. here ExpressionWrapper is used to wrap the expression and specify the output field type as DecimalField. this is necessary because the result of the expression is not automatically inferred by django. you need to tell django what type of field to expect as the result of the expression.
 
+    # Quering generic relationships
+    # Generic relationships allow a model to reference any other model in the database.
+    # This is useful when you want to create a relationship that can point to multiple models.
+    # To create a generic relationship, you need to use GenericForeignKey from django.contrib.contenttypes.
+    content_type = ContentType.objects.get_for_model(Product) # Get the ContentType for the Product model. ContentType is a model that stores information about all the models in the database.
+    result10 = TaggedItem.objects\
+            .select_related('tag')\
+            .filter(content_type=content_type, 
+                    object_id=1
+            ) # Get all tags for the product with id 1. here content_type is the ContentType for the Product model and object_id is the id of the product. this will return all TaggedItem objects that are related to the product with id 1. we use select_related to fetch the related tag in the same query to avoid N+1 query problem.
 
 
-
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result9)})
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result10)})
