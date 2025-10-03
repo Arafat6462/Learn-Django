@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.db.models import Q, F
-from django.db.models import Count, Min, Max, Avg, Sum, Value, Func
+from django.db.models import Count, Min, Max, Avg, Sum, Value, Func, ExpressionWrapper, DecimalField
 from django.db.models.functions import Concat
 from store.models import Product, Customer, Collection, Order, OrderItem
 
@@ -178,7 +178,13 @@ def say_hello(request):
     # Grouping data: 
     result8 = Customer.objects.annotate(order_count=Count('order')) # Annotate each customer with the number of orders they have placed. here order is the reverse relationship from Order to Customer. django automatically creates a reverse relationship for ForeignKey fields. and you can access it using the model name in lowercase followed by _set. you can change the name of the reverse relationship by adding related_name parameter in ForeignKey field. here we are counting the number of orders for each customer and annotating it as order_count. but here insted of order_set we use order because django automatically removes the _set suffix when using aggregate functions. if we use order_set it will raise an error because order_set is not recognized as a valid field for aggregation.
     
+    # working with expressions wrappers
+    # sometimes you need to perform operations that are not directly supported by the database functions or F objects.
+    # in such cases, you can create custom expressions by subclassing Func or using Expression
+    result9 = Product.objects.annotate(discounted_price=F('unit_price') * 0.8) # this will raise an error because you cannot multiply a F object directly with a float. you need to use ExpressionWrapper to wrap the expression and specify the output field type.
+    result9 = Product.objects.annotate(discounted_price=ExpressionWrapper(F('unit_price') * 0.8, output_field=DecimalField())) # Annotate each product with a new field 'discounted_price' which is 80% of the unit_price. here ExpressionWrapper is used to wrap the expression and specify the output field type as DecimalField. this is necessary because the result of the expression is not automatically inferred by django. you need to tell django what type of field to expect as the result of the expression.
 
 
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result8)})
+
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result9)})
