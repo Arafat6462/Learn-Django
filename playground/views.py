@@ -171,6 +171,14 @@ def say_hello(request):
     result6 = Customer.objects.annotate(full_name=Func(F('first_name'),Value(' '), F('last_name'), function='CONCAT')) # Annotate each customer with a new field 'full_name' which is the concatenation of first_name and last_name. here Func is used to call a database function. CONCAT is a SQL function that concatenates two or more strings. this will work only if your database supports CONCAT function. if you are using sqlite, you can use || operator instead of CONCAT function.
     # alternatively, you can use Concat function from django.db.models.functions
     result7 = Customer.objects.annotate(full_name=Concat('first_name', Value(' '), 'last_name')) # This is a more portable way to concatenate strings across different databases. it will work with all databases supported by django.
+    # Func vs Concat
+    # Func is a generic way to call any database function. you need to specify the function name as a string. it may not be portable across different databases if the function name or syntax is different.
+    # Concat is a specific function provided by django to concatenate strings. it is portable across different databases and handles the syntax differences internally. it is recommended to use Concat for string concatenation
+
+    # Grouping data: 
+    result8 = Customer.objects.annotate(order_count=Count('order')) # Annotate each customer with the number of orders they have placed. here order is the reverse relationship from Order to Customer. django automatically creates a reverse relationship for ForeignKey fields. and you can access it using the model name in lowercase followed by _set. you can change the name of the reverse relationship by adding related_name parameter in ForeignKey field. here we are counting the number of orders for each customer and annotating it as order_count. but here insted of order_set we use order because django automatically removes the _set suffix when using aggregate functions. if we use order_set it will raise an error because order_set is not recognized as a valid field for aggregation.
+    
 
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result7)})
+
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result8)})
