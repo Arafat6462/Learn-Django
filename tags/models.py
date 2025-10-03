@@ -4,11 +4,23 @@ from store.models import Product
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 
+# Creating a custom manager for TaggedItem model
+class TaggedItemManager(models.Manager):
+    def get_tags_for(self, obj_type, obj_id):
+        content_type = ContentType.objects.get_for_model(obj_type) 
+        return TaggedItem.objects\
+                .select_related('tag')\
+                .filter(content_type=content_type, 
+                        object_id=obj_id
+                )
+    # this method will return all tags for a given object type and object id by querying the TaggedItem model. here we are using select_related to fetch the related tag in the same query to avoid N+1 query problem.
+
 # Create your models here.
 class Tag(models.Model):
     lable = models.CharField(max_length=255)
 
 class TaggedItem(models.Model):
+    objects = TaggedItemManager() # assigning the custom manager to the model
     # what tag applies to what object
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 

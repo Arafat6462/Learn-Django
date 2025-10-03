@@ -196,6 +196,7 @@ def say_hello(request):
             .filter(content_type=content_type, 
                     object_id=1
             ) # Get all tags for the product with id 1. here content_type is the ContentType for the Product model and object_id is the id of the product. this will return all TaggedItem objects that are related to the product with id 1. we use select_related to fetch the related tag in the same query to avoid N+1 query problem.
+    # Alternatively.
+    product = TaggedItem.objects.get_tags_for(Product, 1) # Get all tags for the product with id 1 using the custom manager method. here we are using a custom manager method get_tags_for to get all tags for a given model and object id. this method is defined in the TaggedItem model's manager. this is a more convenient way to get tags for a product without having to deal with ContentType and object_id directly.
 
-
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result10)})
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(product)})
