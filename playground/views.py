@@ -212,4 +212,19 @@ def say_hello(request):
     # Warning: Caching happens only if it evaluated the entire QuerySet first. if you slice the QuerySet before evaluating it, only the sliced portion is cached. for example, if you do product = Product.objects.all()[:5] and then evaluate it, only the first 5 products are cached. if you access product[5], it will hit the database again to fetch the 6th product.
 
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(product)})
+    # Creating Objects/inserting into the database.
+    collection = Collection() # Create a new Collection instance (not saved to the database yet)
+    # we can set the fields using keyword arguments in the constructor like Collection(title='New Collection') or we can set the fields directly like below.
+    # but setting with keyword arguments you dont get automplete and type checking in some IDEs. and in refactoring, if you change the field name in the model, it will not be reflected in the keyword arguments. so it is better to set the fields directly.
+    collection.title = 'Video Games 2' # Set the title field
+    collection.featured_product = Product(pk=1) # assuming a product with pk=1 already exists
+    #collection.featured_product_id = 1 # Alternatively, you can set the foreign key directly using the _id suffix.
+    # here _ and __ are different. _ is used to access the field directly, while __ is used to access related fields in lookups. 
+    collection.save() # Save the Collection to the database (INSERT operation)
+
+    # Alternatively, you can create and save an object in one step using the create() method of the model manager.
+    Collection.objects.create(title='Books', featured_product=Product(pk=2)) # Create and save a new Collection in one step (INSERT operation). here we are assuming a product with pk=1 already exists. if it does not exist, it will raise an IntegrityError because of the foreign key constraint. it automatically calls save() method internally.
+
+
+
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result9)})
