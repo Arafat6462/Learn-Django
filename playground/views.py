@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, F
+from django.db import transaction, IntegrityError
 from django.db.models import Count, Min, Max, Avg, Sum, Value, Func, ExpressionWrapper, DecimalField
 from django.db.models.functions import Concat
 from store.models import Product, Customer, Collection, Order, OrderItem
@@ -266,5 +267,27 @@ def say_hello(request):
     # in one line
     # Collection.objects.filter(pk__gt=10).delete() # Delete Collections with primary key greater than 10 (DELETE operation). this will hit the database and delete all rows with pk>10 in the collection table.
 
+
+
+    # Transactions
+    # Transactions allow you to group multiple database operations into a single unit of work that either fully succeeds or fully fails.
+    # This is useful for maintaining data integrity, especially when performing multiple related operations that must all succeed together.
+    # In Django, you can manage transactions using the atomic() context manager or decorator
+    
+    # always create parent object first before creating child object because of foreign key constraint.
+    with transaction.atomic(): # Start a transaction block (ensures all operations inside either fully succeed or fully fail)
+        order = Order() # Create a new Order instance (not saved to the database yet)
+        order.customer_id = 1 # assuming a customer with pk=1 already exists
+        order.save() # Save the Order to the database (INSERT operation)
+
+        order_item = OrderItem() # Create a new OrderItem instance (not saved to the database yet)
+        order_item.order = order # Set the foreign key to the newly created order
+        order_item.product_id = 1 # assuming a product with pk=1 already exists
+        order_item.quantity = 1
+        order_item.unit_price = 20
+        order_item.save() # Save the OrderItem to the database (INSERT operation)
+    # If any operation inside the atomic block raises an exception, all changes made within the block are rolled back, ensuring data integrity.
+    # If all operations succeed, the transaction is committed, and the changes are saved to the database.
+    # Tips: if you want make full function atomic, you can use @transaction.atomic decorator on top of the function definition.
 
     return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result9)})
