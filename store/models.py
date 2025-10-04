@@ -22,7 +22,7 @@ class Collection(models.Model):
     # Meta class vs __str__ method:
     # Meta class is used to define metadata for the model. it is used to define ordering, verbose_name, verbose_name_plural, etc.
     # __str__ method is used to define the string representation of the object. it is used in the admin site and in the shell. 
-    
+
 
 class Promotion(models.Model):
     description = models.CharField(max_length=255)
@@ -31,7 +31,7 @@ class Promotion(models.Model):
     # django automatically adds reverse relationship in the related model
     # products = reverse relationship from Product model will be created automatically as 'promotions_set' unless specified otherwise in Product model
     products = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='+')
-# Create your models here.
+
 class Product(models.Model):
     # in django, primary key is automatically added as id field if not specified otherwise
     # sku = models.CharField(max_length=10, primary_key=True)
@@ -43,6 +43,13 @@ class Product(models.Model):
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
     promotions = models.ManyToManyField(Promotion)
+
+    def __str__(self): # string representation of the object for better readability in admin site and shell. default is super().__str__()
+        return self.title
+    
+    class Meta:
+        ordering = ['title'] # default ordering for the model. it will be used in the admin site and in the shell.
+        
 
 class Customer(models.Model):
     MEMBERSHIP_BRONZE = 'B'
