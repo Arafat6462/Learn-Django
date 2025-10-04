@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, F
 from django.db.models import Count, Min, Max, Avg, Sum, Value, Func, ExpressionWrapper, DecimalField
 from django.db.models.functions import Concat
-from store.models import Product, Customer, Collection, Order, OrderItem, TaggedItem
+from store.models import Product, Customer, Collection, Order, OrderItem
 from tags.models import TaggedItem
 
 
@@ -198,5 +198,18 @@ def say_hello(request):
             ) # Get all tags for the product with id 1. here content_type is the ContentType for the Product model and object_id is the id of the product. this will return all TaggedItem objects that are related to the product with id 1. we use select_related to fetch the related tag in the same query to avoid N+1 query problem.
     # Alternatively.
     product = TaggedItem.objects.get_tags_for(Product, 1) # Get all tags for the product with id 1 using the custom manager method. here we are using a custom manager method get_tags_for to get all tags for a given model and object id. this method is defined in the TaggedItem model's manager. this is a more convenient way to get tags for a product without having to deal with ContentType and object_id directly.
+
+    # QuerySet caching
+    # QuerySets are lazy and are not evaluated until you iterate over them, convert them to a list, or access their data in some other way. 
+    # Once a QuerySet is evaluated, it is cached and subsequent accesses to the same QuerySet will use the cached data instead of hitting the database again.
+    # This caching behavior can improve performance by reducing the number of database queries, but it also means that if the underlying data changes, the QuerySet will not reflect those changes unless it is re-evaluated.
+    product = Product.objects.all()  # QuerySet is created, no database access yet.
+    product = list(product)  # QuerySet is evaluated, database query is executed
+    product = list(product)  # Uses cached data, no additional database query
+    # reading data from the database/disk is slow. so if you are going to use the same queryset multiple times, it is better to cache it in a variable and use it instead of calling the database multiple times. because reading from memory is much faster than reading from the database/disk.
+    product2 = product[0]  # Accessing the first product from the cached list, no database query.
+    # Warning: If you modify the database (e.g., add, update, delete records) after a QuerySet has been evaluated, the cached data will not reflect those changes. You would need to create a new QuerySet to see the updated data.
+    # Warning: Caching happens only if it evaluated the entire QuerySet first. if you slice the QuerySet before evaluating it, only the sliced portion is cached. for example, if you do product = Product.objects.all()[:5] and then evaluate it, only the first 5 products are cached. if you access product[5], it will hit the database again to fetch the 6th product.
+
 
     return render(request, 'hello.html', {'name': 'Arafat', 'products': list(product)})
