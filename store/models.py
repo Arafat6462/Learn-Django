@@ -49,6 +49,9 @@ class Product(models.Model):
     
     class Meta:
         ordering = ['title'] # default ordering for the model. it will be used in the admin site and in the shell.
+        # ordering in Meta class vs ModelAdmin class in admin.py:
+        # ordering in Meta class is used to define the default ordering for the model. it will be used in the admin site and in the shell.
+        # ordering in ModelAdmin class is used to define the ordering for the model in the admin site only. it will not affect the ordering in the shell.
         
 
 class Customer(models.Model):

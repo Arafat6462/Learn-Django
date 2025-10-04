@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Collection, Product
+from .models import Collection, Product, Customer
 
 # Register your models here.
 admin.site.register(Collection)
@@ -16,3 +16,14 @@ class ProductAdmin(admin.ModelAdmin):
 # Note: ModelAdmin vs admin.site.register:
 # ModelAdmin is a class that defines the admin interface for a model. it is used to customize the admin interface.
 # admin.site.register is a function that registers a model with the admin site. it is used to make a model available in the admin site.
+
+
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ['first_name', 'last_name', 'membership']
+    list_editable = ['membership']
+    list_per_page = 10
+    ordering = ['first_name', 'last_name'] # ordering in ModelAdmin class is used to define the ordering for the model in the admin site only. it will not affect the ordering in the shell.
+# Note: editing in admin.py => ModelAdmin class is for customizing the admin interface,
+# while editing in models.py => Meta class is for configuring model behavior (like ordering, verbose_name, etc.)
