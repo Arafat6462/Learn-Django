@@ -227,4 +227,30 @@ def say_hello(request):
 
 
 
+
+    # Updating Objects.
+    # To update an object, you first retrieve it from the database, modify its fields, and then call save() to persist the changes.
+    collection = Collection(pk=11) # Retrieve the Collection with primary key 11 (does not hit the database yet)
+    collection.title = 'Video Games edited'
+    collection.featured_product = None
+    collection.save() # Save the changes to the database (UPDATE operation) because the object already has a primary key. update and create only differ in the presence of primary key.
+
+    # If you want to update singele field like below.
+    collection = Collection(pk=11)
+    collection.featured_product = None
+    collection.save()
+    # Warning: someting crazy happens. it will set rest of the fields to their default values or null if they are nullable. so be careful when updating single fields using this method. because it will overwrite the other fields with default or null values.
+
+    # to update Properly, first fetch the object from the database. this way you get all the fields with their current values.
+    collection = Collection.objects.get(pk=18) # Fetch the Collection from the database (hits the database). you might thing it is inefficient because it hits the database twice (once for get and once for save). but it is better to be safe than sorry. because you dont want to accidentally overwrite other fields with default or null values. and most cases, it will not be a performance issue unless you are doing it in a loop or bulk operation.
+    collection.featured_product = None
+    collection.save() # Save the changes to the database (UPDATE operation)
+
+    # If you want to update multiple fields or multiple objects at once, you can use the update() method of the model manager. this method hits the database only once and does not call the save() method of the model, so it does not trigger any signals or validations.
+    Collection.objects.update(featured_product=None) # Set featured_product to None for all collections (UPDATE operation). this will hit the database only once and set featured_product to None for all rows in the collection table.
+
+    # to update a subset of objects, you can filter them first and then call update().
+    Collection.objects.filter(pk=24).update(featured_product=12) # Set featured_product to 11 for the collection with primary key 11 (UPDATE operation). this will hit the database only once and set featured_product to None for the row with pk=11 in the collection table.
+
+
     return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result9)})
