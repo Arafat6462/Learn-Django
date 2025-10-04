@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, F
-from django.db import transaction, IntegrityError
+from django.db import transaction, connection
 from django.db.models import Count, Min, Max, Avg, Sum, Value, Func, ExpressionWrapper, DecimalField
 from django.db.models.functions import Concat
 from store.models import Product, Customer, Collection, Order, OrderItem
@@ -275,19 +275,49 @@ def say_hello(request):
     # In Django, you can manage transactions using the atomic() context manager or decorator
     
     # always create parent object first before creating child object because of foreign key constraint.
-    with transaction.atomic(): # Start a transaction block (ensures all operations inside either fully succeed or fully fail)
-        order = Order() # Create a new Order instance (not saved to the database yet)
-        order.customer_id = 1 # assuming a customer with pk=1 already exists
-        order.save() # Save the Order to the database (INSERT operation)
+    # with transaction.atomic(): # Start a transaction block (ensures all operations inside either fully succeed or fully fail)
+    #     order = Order() # Create a new Order instance (not saved to the database yet)
+    #     order.customer_id = 1 # assuming a customer with pk=1 already exists
+    #     order.save() # Save the Order to the database (INSERT operation)
 
-        order_item = OrderItem() # Create a new OrderItem instance (not saved to the database yet)
-        order_item.order = order # Set the foreign key to the newly created order
-        order_item.product_id = 1 # assuming a product with pk=1 already exists
-        order_item.quantity = 1
-        order_item.unit_price = 20
-        order_item.save() # Save the OrderItem to the database (INSERT operation)
+    #     order_item = OrderItem() # Create a new OrderItem instance (not saved to the database yet)
+    #     order_item.order = order # Set the foreign key to the newly created order
+    #     order_item.product_id = 1 # assuming a product with pk=1 already exists
+    #     order_item.quantity = 1
+    #     order_item.unit_price = 20
+    #     order_item.save() # Save the OrderItem to the database (INSERT operation)
     # If any operation inside the atomic block raises an exception, all changes made within the block are rolled back, ensuring data integrity.
     # If all operations succeed, the transaction is committed, and the changes are saved to the database.
     # Tips: if you want make full function atomic, you can use @transaction.atomic decorator on top of the function definition.
 
-    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result9)})
+
+
+    # Executing raw SQL queries
+    # In addition to using Django's ORM, you can also execute raw SQL queries directly against the database.
+    # This can be useful for complex queries that are difficult to express using the ORM, or for performance optimizations.
+    # To execute raw SQL queries, you can use the raw() method of the model manager or the connection object from django.db.
+    product = Product.objects.raw('SELECT * FROM store_product') # Execute a raw SQL query to fetch all products. this will return a RawQuerySet which is similar to a regular QuerySet but does not support all the methods of a QuerySet.
+    # this will also return queryset but it is not a real queryset. it is a RawQuerySet. so it does not support all the methods of a QuerySet. for example, you cannot use filter(), exclude(), order_by(), etc. on a RawQuerySet. you can only iterate over it or convert it to a list.
+
+    # Tips: use raw SQL queries sparingly and only when necessary, as they can make your code less portable and harder to maintain. always prefer using the ORM whenever possible. use raw SQL queries only for complex queries that cannot be expressed using the ORM or for performance optimizations.
+
+    # Sometime we need to query that dont map to a model. in that case, we can use connection object from django.db to execute raw SQL queries.
+    # By this way, you can access database directly without going through a model. this is useful for executing queries that do not map to a specific model or for performing database operations that are not supported by the ORM.
+    cursor = connection.cursor() # Get a cursor object to execute raw SQL queries
+    cursor.execute('SELECT COUNT(*) FROM store_product') # Execute a raw SQL query to count all products
+    cursor.close() # Close the cursor to release database resources
+
+    # best practive is to use with statement to automatically close the cursor after use.
+    with connection.cursor() as cursor:
+        cursor.execute() 
+        # alternatively, you can use callproc() method to call stored procedures.
+        # cursor.callproc('stored_procedure_name', [param1, param2, ...
+    # even if an exception occurs, the cursor will be closed automatically when exiting the with block.
+
+    # cursor vs raw():
+    # cursor provides more flexibility and control over the SQL being executed, while raw() is more convenient for simple queries that map directly to a model.
+    # cursor requires manual handling of SQL and result sets, while raw() automatically maps results to model instances.
+    # cursor is useful for complex queries or operations that do not fit well with the ORM, while raw() is suitable for straightforward queries that can be expressed in SQL.
+
+
+    return render(request, 'hello.html', {'name': 'Arafat', 'products': list(cursor)})
