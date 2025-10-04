@@ -5,6 +5,25 @@ class Collection(models.Model):
     featured_product = models.ForeignKey(
         'Product', on_delete=models.SET_NULL, null=True, related_name='+')
 
+    # This is the default string representation of the object. it is used in the admin site and in the shell.
+    # def __str__(self) -> str: 
+    #     return super().__str__()
+
+    # Overriding the default string representation of the object to return the title of the collection.
+    # This is useful for displaying the collection in the admin site and in the shell.
+    def __str__(self) -> str:
+        return self.title
+    
+    # Meta class is used to define metadata for the model. it is used to define ordering, verbose_name, verbose_name_plural, etc.
+    # here we are defining the default ordering for the model. it will be used in the admin site and in the shell.
+    class Meta:
+        ordering = ['title']
+
+    # Meta class vs __str__ method:
+    # Meta class is used to define metadata for the model. it is used to define ordering, verbose_name, verbose_name_plural, etc.
+    # __str__ method is used to define the string representation of the object. it is used in the admin site and in the shell. 
+    
+
 class Promotion(models.Model):
     description = models.CharField(max_length=255)
     discount = models.FloatField()
