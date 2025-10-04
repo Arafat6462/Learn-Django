@@ -253,4 +253,18 @@ def say_hello(request):
     Collection.objects.filter(pk=24).update(featured_product=12) # Set featured_product to 11 for the collection with primary key 11 (UPDATE operation). this will hit the database only once and set featured_product to None for the row with pk=11 in the collection table.
 
 
+
+    # Deleting Objects.
+    # we can delete a single object or multiple objects at once.
+    collection = Collection(pk=11) # Create a Collection instance with primary key 11 (does not hit the database yet)
+    collection.delete() # Delete the Collection from the database (DELETE operation). this will hit the database and delete the row with pk=11 in the collection table.
+
+    # to delete multiple objects at once, you can filter them first to get queryset and then call delete().
+    collection = Collection.objects.filter(pk__gt=20) # Get a QuerySet of Collections with primary key greater than 5 (does not hit the database yet)
+    collection.delete() # Delete the filtered Collections from the database (DELETE operation). this will hit the database and delete all rows with pk>5 in the collection table.
+    
+    # in one line
+    # Collection.objects.filter(pk__gt=10).delete() # Delete Collections with primary key greater than 10 (DELETE operation). this will hit the database and delete all rows with pk>10 in the collection table.
+
+
     return render(request, 'hello.html', {'name': 'Arafat', 'products': list(result9)})
