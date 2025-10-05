@@ -1,9 +1,20 @@
 from django.contrib import admin
+from django.db.models import Count
 from .models import Collection, Product, Customer, Order
 
 # Register your models here.
-admin.site.register(Collection)
 # admin.site.register(Product) # simple way to register a model in the admin site. to edit the admin interface, we need to create a ModelAdmin class.
+@admin.register(Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ['title', 'product_count'] # fields to display in the admin list view
+
+    @admin.display(ordering='product_count') # this decorator is used to customize the display of the method in the admin list view. ordering parameter is used to specify the field to order by when the column header is clicked.
+    def product_count(self, collection): # custom method to display the product count. it takes the collection object as a parameter.
+        return collection.product_count # product_set is the reverse relationship of the ForeignKey in the Product model. it is automatically created by django. it is a queryset of all the products related to the collection.
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(product_count=Count('product')) # annotate is used to add a new field to the queryset. here we are adding a new field 'product_count' which is the count of the related products. this will optimize the query and reduce the number of queries to the database.
+
 
 # we can also customize the admin interface by creating a ModelAdmin class and registering it with the model.
 @admin.register(Product) # this is a decorator that does the same thing as admin.site.register(Product, ProductAdmin). it is just a cleaner way to do it.
@@ -50,4 +61,4 @@ class OrderAdmin(admin.ModelAdmin):
     # 1. using a custom method (as shown below)
     # 2. in models.py, __str__ method 
     def customer_name(self, order): # custom method to display the customer name. it takes the order object as a parameter.
-        return order.customer.first_name # we can access the related object's fields using the foreign key field.
+        return f"{order.customer.first_name} {order.customer.last_name}" # we can access the related object's fields using the foreign key field.
