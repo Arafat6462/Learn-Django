@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Collection, Product, Customer
+from .models import Collection, Product, Customer, Order
 
 # Register your models here.
 admin.site.register(Collection)
@@ -37,3 +37,17 @@ class CustomerAdmin(admin.ModelAdmin):
     ordering = ['first_name', 'last_name'] # ordering in ModelAdmin class is used to define the ordering for the model in the admin site only. it will not affect the ordering in the shell.
 # Note: editing in admin.py => ModelAdmin class is for customizing the admin interface,
 # while editing in models.py => Meta class is for configuring model behavior (like ordering, verbose_name, etc.)
+
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['id', 'placed_at', 'customer_name']
+    list_per_page = 10
+    list_select_related = ['customer'] # to optimize the query and reduce the number of queries to the database. it will use a SQL join to fetch the related objects in a single query instead of multiple queries.
+
+    # two way to display related object's field in the admin list view:
+    # 1. using a custom method (as shown below)
+    # 2. in models.py, __str__ method 
+    def customer_name(self, order): # custom method to display the customer name. it takes the order object as a parameter.
+        return order.customer.first_name # we can access the related object's fields using the foreign key field.
