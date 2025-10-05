@@ -8,10 +8,16 @@ admin.site.register(Collection)
 # we can also customize the admin interface by creating a ModelAdmin class and registering it with the model.
 @admin.register(Product) # this is a decorator that does the same thing as admin.site.register(Product, ProductAdmin). it is just a cleaner way to do it.
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['title', 'unit_price', 'collection'] # fields to display in the admin list view
+    list_display = ['title', 'unit_price', 'inventory', 'inventory_status'] # here, inventory_status is a custom method defined below. it is not a field in the model. it calls the method and displays the result in the admin list view.
     list_filter = ['collection'] # fields to filter in the admin list view
     list_editable = ['unit_price'] # fields to edit in the admin list view
     list_per_page = 10 # number of items to display per page in the admin list view
+
+    @admin.display(ordering='inventory') # this decorator is used to customize the display of the method in the admin list view. ordering parameter is used to specify the field to order by when the column header is clicked.
+    def inventory_status(self, product): # custom method to display inventory status. it takes the product object as a parameter.
+        if product.inventory < 10:
+            return 'Low'
+        return 'OK'
 
 # Note: ModelAdmin vs admin.site.register:
 # ModelAdmin is a class that defines the admin interface for a model. it is used to customize the admin interface.
