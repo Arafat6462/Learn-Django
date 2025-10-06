@@ -110,6 +110,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['customer'] # this will add a search box to the customer field in the admin form view. it is useful when there are a lot of customers.
     list_display = ['id', 'placed_at', 'customer_name']
     list_per_page = 10
     list_select_related = ['customer'] # to optimize the query and reduce the number of queries to the database. it will use a SQL join to fetch the related objects in a single query instead of multiple queries.
