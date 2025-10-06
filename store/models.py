@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
@@ -38,11 +39,15 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField() # this will create a slug field which is a short label for something, containing only letters, numbers, underscores or hyphens so that it can be used in URLs
     description = models.TextField()
-    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
-    inventory = models.IntegerField()
+    unit_price = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2,
+        validators=[MinValueValidator(1.00)]
+        )
+    inventory = models.IntegerField(validators=[MinValueValidator(0)]) # inventory cannot be negative
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
-    promotions = models.ManyToManyField(Promotion)
+    promotions = models.ManyToManyField(Promotion, blank=True) # blank=True means the field is optional in forms (including admin site, don't show error for blank).
 
     def __str__(self): # string representation of the object for better readability in admin site and shell. default is super().__str__()
         return self.title
@@ -68,7 +73,7 @@ class Customer(models.Model):
     last_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=255)
-    birth_date = models.DateField(null=True)
+    birth_date = models.DateField(null=True, blank=True) # null=True means the field can be null in the database, blank=True means the field is optional in forms (including admin site, don't show error for blank).
     membership = models.CharField(max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
     
     def __str__(self) -> str:
