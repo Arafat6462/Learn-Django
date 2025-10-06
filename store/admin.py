@@ -1,8 +1,6 @@
 from django.contrib import admin, messages
-from django.contrib.contenttypes.admin import GenericTabularInline
 from django.db.models import Count
 from .models import Collection, Product, Customer, Order, OrderItem
-from tags.models import TaggedItem
 from django.utils.html import format_html, urlencode
 from django.urls import reverse
 
@@ -45,17 +43,11 @@ class CollectionAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(product_count=Count('product')) # annotate is used to add a new field to the queryset. here we are adding a new field 'product_count' which is the count of the related products. this will optimize the query and reduce the number of queries to the database.
 
-class TagInline(GenericTabularInline): # this is used to display the related tags of a product in the product detail view. it is a tabular inline view.
-    model = TaggedItem # the model to be displayed in the inline view. here, TaggedItem is the model that has a generic foreign key to the Product model. it is a reverse relationship.
-    autocomplete_fields = ['tag'] # this will add a search box to the tag field in the inline form view. it is useful when there are a lot of tags.
-    extra = 1 # number of extra forms to display in the inline view. here, we are displaying 1 extra form.
-    min_num = 1 # minimum number of forms to display in the inline view. here, we are setting it to 1 to ensure that at least one tag is added.
-
  
 # we can also customize the admin interface by creating a ModelAdmin class and registering it with the model.
 @admin.register(Product) # this is a decorator that does the same thing as admin.site.register(Product, ProductAdmin). it is just a cleaner way to do it.
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [TagInline] # to display the related tags of a product in the product detail view.
+    # inlines = [TagInline] # to display the related tags of a product in the product detail view.
     autocomplete_fields = ['collection'] # this will add a search box to the collection field in the admin form view. it is useful when there are a lot of collections.
     prepopulated_fields = {'slug': ['title']} # this will automatically populate the slug field based on the title field. it is a dictionary where the key is the field to be populated and the value is a list of fields to use for populating the key field.
     # fields = ['title', 'slug'] # fields to display in the admin form view. by default, all fields are displayed.
