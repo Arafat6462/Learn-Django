@@ -1,10 +1,11 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models import Count
 from .models import Collection, Product, Customer, Order
 from django.utils.html import format_html, urlencode
 from django.urls import reverse
 
 
+# Custom Filter for Inventory
 class InventoryFilter(admin.SimpleListFilter): # custom filter for inventory
     title = 'inventory' # display title for the filter
     parameter_name = 'inventory' # parameter name for the filter in the URL
@@ -45,6 +46,7 @@ class CollectionAdmin(admin.ModelAdmin):
 # we can also customize the admin interface by creating a ModelAdmin class and registering it with the model.
 @admin.register(Product) # this is a decorator that does the same thing as admin.site.register(Product, ProductAdmin). it is just a cleaner way to do it.
 class ProductAdmin(admin.ModelAdmin):
+    actions = ['clear_inventory'] # custom actions to perform on the selected items in the admin list view
     list_display = ['title', 'unit_price', 'inventory', 'inventory_status', 'collection', 'collection_title'] # here, inventory_status is a custom method defined below. it is not a field in the model. it calls the method and displays the result in the admin list view. here collection is a foreign key field, django automatically displays the related object's __str__ method.
     list_filter = ['collection'] # fields to filter in the admin list view
     list_editable = ['unit_price'] # fields to edit in the admin list view
@@ -58,6 +60,14 @@ class ProductAdmin(admin.ModelAdmin):
             return 'Low'
         return 'OK'
     
+
+    # custom action to clear inventory
+    @admin.action(description='Clear inventory') # this decorator is used to customize the display of the action in the admin list view. description parameter is used to specify the name of the action.
+    def clear_inventory(self, request, queryset): # custom action to clear inventory. it takes the request and queryset as parameters.
+        updated_count = queryset.update(inventory=0) # update the inventory of the selected products to 0. this will return the number of rows updated.
+        self.message_user(request, f'{updated_count} products were successfully updated.', messages.SUCCESS) # display a message to the user after the action is performed.
+    
+
     def collection_title(self, product): # custom method to display the collection title. it takes the product object as a parameter.
         return product.collection.title
 
