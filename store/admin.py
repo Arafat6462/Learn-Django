@@ -52,14 +52,19 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'membership']
+    list_display = ['first_name', 'last_name', 'membership', 'orders'] # here, orders is a custom method defined below. it is not a field in the model. it calls the method and displays the result in the admin list view.
     list_editable = ['membership']
     list_per_page = 10
     ordering = ['first_name', 'last_name'] # ordering in ModelAdmin class is used to define the ordering for the model in the admin site only. it will not affect the ordering in the shell.
 # Note: editing in admin.py => ModelAdmin class is for customizing the admin interface,
 # while editing in models.py => Meta class is for configuring model behavior (like ordering, verbose_name, etc.)
 
-
+    def orders(self, customer):
+        return customer.orders
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(orders=Count('order')) # annotate is used to add a new field to the queryset. here we are adding a new field 'orders' which is the count of the related orders. this will optimize the query and reduce the number of queries to the database.
+    
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
