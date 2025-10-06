@@ -19,6 +19,9 @@ class TaggedItemManager(models.Manager):
 class Tag(models.Model):
     lable = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.lable
+
 class TaggedItem(models.Model):
     objects = TaggedItemManager() # assigning the custom manager to the model
     # what tag applies to what object
