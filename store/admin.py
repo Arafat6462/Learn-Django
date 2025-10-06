@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from django.db.models import Count
-from .models import Collection, Product, Customer, Order
+from .models import Collection, Product, Customer, Order, OrderItem
 from django.utils.html import format_html, urlencode
 from django.urls import reverse
 
@@ -59,6 +59,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_per_page = 10 # number of items to display per page in the admin list view
     list_select_related = ['collection'] # to optimize the query and reduce the number of queries to the database. it will use a SQL join to fetch the related objects in a single query instead of multiple queries.
     list_filter = ['collection', 'last_update', InventoryFilter] # fields to filter in the admin list view. last_update is a DateTimeField, django will automatically create a date hierarchy filter for it. here InventoryFilter is a custom filter defined above.
+    search_fields = ['title']
 
     @admin.display(ordering='inventory') # this decorator is used to customize the display of the method in the admin list view. ordering parameter is used to specify the field to order by when the column header is clicked.
     def inventory_status(self, product): # custom method to display inventory status. it takes the product object as a parameter.
@@ -106,11 +107,20 @@ class CustomerAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(orders=Count('order')) # annotate is used to add a new field to the queryset. here we are adding a new field 'orders' which is the count of the related orders. this will optimize the query and reduce the number of queries to the database.
-    
+
+
+# Inline model for OrderItem
+class OrderItemInline(admin.TabularInline): # this is used to display the related items of an order in the order detail view. it is a tabular inline view.
+    autocomplete_fields = ['product'] # this will add a search box to the product field in the inline form view. it is useful when there are a lot of products.
+    model = OrderItem # the model to be displayed in the inline view. here, OrderItem is the model that has a foreign key to the Order model. it is a reverse relationship.
+    extra = 1 # number of extra forms to display in the inline view. here, we are displaying 1 extra form.
+    min_num = 1 # minimum number of forms to display in the inline view. here, we are setting it to 1 to ensure that at least one order item is added.
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     autocomplete_fields = ['customer'] # this will add a search box to the customer field in the admin form view. it is useful when there are a lot of customers.
+    inlines = [OrderItemInline]
     list_display = ['id', 'placed_at', 'customer_name']
     list_per_page = 10
     list_select_related = ['customer'] # to optimize the query and reduce the number of queries to the database. it will use a SQL join to fetch the related objects in a single query instead of multiple queries.
