@@ -4,6 +4,22 @@ from .models import Collection, Product, Customer, Order
 from django.utils.html import format_html, urlencode
 from django.urls import reverse
 
+
+class InventoryFilter(admin.SimpleListFilter): # custom filter for inventory
+    title = 'inventory' # display title for the filter
+    parameter_name = 'inventory' # parameter name for the filter in the URL
+    
+    def lookups(self, request, model_admin): # this method returns a list of tuples. each tuple contains a value and a display name for the filter option.
+        return [
+            ('<10', 'Low') # value is '<10' and display name is 'Low'
+        ]
+    
+    def queryset(self, request, queryset): # this method filters the queryset based on the selected filter option.
+        if self.value() == '<10': # if the selected filter option is 'Low'
+            return queryset.filter(inventory__lt=10) # filter the queryset to include only products with inventory less than 10
+        return queryset # if no filter option is selected, return the original queryset
+
+
 # Register your models here.
 # admin.site.register(Product) # simple way to register a model in the admin site. to edit the admin interface, we need to create a ModelAdmin class.
 @admin.register(Collection)
@@ -34,6 +50,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ['unit_price'] # fields to edit in the admin list view
     list_per_page = 10 # number of items to display per page in the admin list view
     list_select_related = ['collection'] # to optimize the query and reduce the number of queries to the database. it will use a SQL join to fetch the related objects in a single query instead of multiple queries.
+    list_filter = ['collection', 'last_update', InventoryFilter] # fields to filter in the admin list view. last_update is a DateTimeField, django will automatically create a date hierarchy filter for it. here InventoryFilter is a custom filter defined above.
 
     @admin.display(ordering='inventory') # this decorator is used to customize the display of the method in the admin list view. ordering parameter is used to specify the field to order by when the column header is clicked.
     def inventory_status(self, product): # custom method to display inventory status. it takes the product object as a parameter.
