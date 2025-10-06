@@ -26,6 +26,7 @@ class InventoryFilter(admin.SimpleListFilter): # custom filter for inventory
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'product_count'] # fields to display in the admin list view
+    search_fields = ['title'] # fields to search in the admin list view
 
     @admin.display(ordering='product_count') # this decorator is used to customize the display of the method in the admin list view. ordering parameter is used to specify the field to order by when the column header is clicked.
     def product_count(self, collection): # custom method to display the product count. it takes the collection object as a parameter.
@@ -46,6 +47,11 @@ class CollectionAdmin(admin.ModelAdmin):
 # we can also customize the admin interface by creating a ModelAdmin class and registering it with the model.
 @admin.register(Product) # this is a decorator that does the same thing as admin.site.register(Product, ProductAdmin). it is just a cleaner way to do it.
 class ProductAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['collection'] # this will add a search box to the collection field in the admin form view. it is useful when there are a lot of collections.
+    prepopulated_fields = {'slug': ['title']} # this will automatically populate the slug field based on the title field. it is a dictionary where the key is the field to be populated and the value is a list of fields to use for populating the key field.
+    # fields = ['title', 'slug'] # fields to display in the admin form view. by default, all fields are displayed.
+    # exclude = ['promotions'] # fields to exclude from the admin form view.
+    # readonly_fields = ['title'] # fields to make read-only in the admin form view.
     actions = ['clear_inventory'] # custom actions to perform on the selected items in the admin list view
     list_display = ['title', 'unit_price', 'inventory', 'inventory_status', 'collection', 'collection_title'] # here, inventory_status is a custom method defined below. it is not a field in the model. it calls the method and displays the result in the admin list view. here collection is a foreign key field, django automatically displays the related object's __str__ method.
     list_filter = ['collection'] # fields to filter in the admin list view
